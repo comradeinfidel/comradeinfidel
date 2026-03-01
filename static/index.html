@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>⚡ Pikatardio</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    :root {
+      --yellow:      #FFD700;
+      --yellow-glow: rgba(255, 215, 0, 0.25);
+      --orange:      #FFA500;
+      --red:         #CC0000;
+      --blue:        #3B4CCA;
+      --blue-dark:   #2a38cc;
+      --dark:        #0d0d1a;
+      --dark-2:      #13132b;
+      --dark-3:      #1c1c3d;
+      --dark-4:      #2a2a55;
+      --text:        #e8e8ff;
+      --text-muted:  #7070a0;
+      --radius:      18px;
+      --radius-sm:   6px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { height: 100%; height: 100dvh; }
+
+    body {
+      background: var(--dark);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    /* ─── Header ─────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, var(--yellow) 0%, var(--orange) 100%);
+      padding: 10px 16px;
+      padding-top: max(10px, env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      box-shadow: 0 3px 24px rgba(255, 165, 0, 0.45);
+      position: relative;
+      z-index: 10;
+    }
+
+    .header-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(255, 255, 255, 0.65);
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .header-avatar .fallback { font-size: 24px; display: none; }
+
+    .header-info { flex: 1; min-width: 0; }
+
+    .header-info h1 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1a1000;
+      letter-spacing: -0.4px;
+      line-height: 1;
+    }
+
+    .header-info p {
+      font-size: 11px;
+      color: #4a3500;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #2d2000;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00cc44;
+      box-shadow: 0 0 8px #00cc44;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* ─── Messages ───────────────────────────── */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      overscroll-behavior: contain;
+    }
+
+    .messages::-webkit-scrollbar { width: 3px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: var(--dark-4); border-radius: 2px; }
+
+    /* ─── Empty / Welcome State ──────────────── */
+    .welcome {
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      padding: 24px 8px;
+    }
+
+    .welcome-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 3px solid var(--yellow);
+      box-shadow: 0 0 30px var(--yellow-glow);
+      overflow: hidden;
+      background: var(--dark-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+
+    .welcome-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .welcome-avatar .fallback { font-size: 44px; display: none; }
+
+    .welcome h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--yellow);
+    }
+
+    .welcome p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 280px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .chip {
+      background: var(--dark-3);
+      border: 1px solid var(--dark-4);
+      border-radius: 20px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .chip:hover   { border-color: var(--yellow); }
+    .chip:active  { background: var(--dark-4); }
+
+    /* ─── Message Row ─────────────────────────── */
+    .msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      animation: fadeUp 0.28s ease both;
+    }
+
+    .msg-row.user { flex-direction: row-reverse; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Row Avatars ─────────────────────────── */
+    .row-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1.5px solid var(--dark-4);
+    }
+
+    .row-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .row-avatar.pika-av {
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+    }
+
+    .row-avatar.user-av {
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      color: white;
+    }
+
+    /* ─── Bubbles ─────────────────────────────── */
+    .bubble {
+      max-width: min(78%, 480px);
+      padding: 11px 14px;
+      border-radius: var(--radius);
+      font-size: 15px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    .bubble.pika {
+      background: var(--dark-3);
+      border: 1px solid var(--dark-4);
+      border-left: 3px solid var(--yellow);
+      border-bottom-left-radius: var(--radius-sm);
+      color: var(--text);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    .bubble.user {
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      border-bottom-right-radius: var(--radius-sm);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(59, 76, 202, 0.35);
+    }
+
+    /* Markdown inside Pikatardio bubbles */
+    .bubble.pika p           { margin-bottom: 7px; }
+    .bubble.pika p:last-child { margin-bottom: 0; }
+    .bubble.pika strong      { color: var(--yellow); font-weight: 700; }
+    .bubble.pika em          { color: #b0b0ff; }
+    .bubble.pika h1,
+    .bubble.pika h2,
+    .bubble.pika h3          { color: var(--yellow); margin: 10px 0 5px; font-size: 1em; }
+    .bubble.pika ul,
+    .bubble.pika ol          { padding-left: 18px; margin: 6px 0; }
+    .bubble.pika li          { margin-bottom: 3px; }
+    .bubble.pika code        {
+      background: rgba(0, 0, 0, 0.35);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+      font-size: 0.86em;
+    }
+    .bubble.pika pre         {
+      background: rgba(0, 0, 0, 0.35);
+      padding: 10px 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+    .bubble.pika pre code    { background: none; padding: 0; }
+    .bubble.pika hr          { border: none; border-top: 1px solid var(--dark-4); margin: 10px 0; }
+    .bubble.pika a           { color: var(--yellow); }
+    .bubble.pika blockquote  {
+      border-left: 3px solid var(--dark-4);
+      margin: 6px 0;
+      padding-left: 10px;
+      color: var(--text-muted);
+    }
+
+    /* ─── Typing Indicator ────────────────────── */
+    .typing-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      animation: fadeUp 0.28s ease both;
+    }
+
+    .typing-bubble {
+      background: var(--dark-3);
+      border: 1px solid var(--dark-4);
+      border-left: 3px solid var(--yellow);
+      border-radius: var(--radius);
+      border-bottom-left-radius: var(--radius-sm);
+      padding: 14px 18px;
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .t-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--yellow);
+      animation: tdot 1.2s infinite;
+    }
+    .t-dot:nth-child(2) { animation-delay: 0.18s; }
+    .t-dot:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes tdot {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+      30%            { transform: translateY(-7px); opacity: 1; }
+    }
+
+    /* ─── Input Bar ───────────────────────────── */
+    .input-bar {
+      background: var(--dark-2);
+      border-top: 1px solid var(--dark-4);
+      padding: 10px 12px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .input-wrap {
+      flex: 1;
+      background: var(--dark-3);
+      border: 1.5px solid var(--dark-4);
+      border-radius: 22px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: flex-end;
+      transition: border-color 0.2s;
+    }
+
+    .input-wrap:focus-within { border-color: var(--yellow); }
+
+    textarea {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 16px;
+      line-height: 1.45;
+      resize: none;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    textarea::placeholder { color: var(--text-muted); }
+
+    .send-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+      border: none;
+      color: #1a1000;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.14s, opacity 0.2s, box-shadow 0.2s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 2px 12px rgba(255, 165, 0, 0.4);
+    }
+
+    .send-btn:not(:disabled):hover  { box-shadow: 0 4px 18px rgba(255, 165, 0, 0.6); }
+    .send-btn:not(:disabled):active { transform: scale(0.88); }
+    .send-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────── -->
+  <header class="header">
+    <div class="header-avatar" id="hdrAv">
+      <img src="/assets/pikatardio.png" alt="Pikatardio"
+           onerror="this.style.display='none'; document.querySelector('#hdrAv .fallback').style.display='block'">
+      <span class="fallback">⚡</span>
+    </div>
+    <div class="header-info">
+      <h1>Pikatardio</h1>
+      <p>Pokémon Master AI ⚡</p>
+    </div>
+    <div class="status">
+      <div class="status-dot"></div>
+      Online
+    </div>
+  </header>
+
+  <!-- ── Messages ───────────────────────────── -->
+  <div class="messages" id="messages">
+
+    <!-- Welcome state (hidden once first message sent) -->
+    <div class="welcome" id="welcome">
+      <div class="welcome-avatar" id="welAv">
+        <img src="/assets/pikatardio.png" alt="Pikatardio"
+             onerror="this.style.display='none'; document.querySelector('#welAv .fallback').style.display='block'">
+        <span class="fallback">⚡</span>
+      </div>
+      <h2>Hey Trainer! ⚡</h2>
+      <p>I'm Pikatardio — your Pokémon Master AI.<br>Ask me anything, I know it all!</p>
+      <div class="chips">
+        <div class="chip" data-msg="What's Garchomp's best competitive set?">Garchomp's best set?</div>
+        <div class="chip" data-msg="Explain EVs and IVs to me like I'm new">Explain EVs & IVs</div>
+        <div class="chip" data-msg="Who is the strongest Legendary Pokémon?">Strongest Legendary?</div>
+        <div class="chip" data-msg="Build me a rain team for VGC">Build a rain team</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Input Bar ───────────────────────────── -->
+  <div class="input-bar">
+    <div class="input-wrap">
+      <textarea id="input" placeholder="Ask Pikatardio anything…" rows="1"></textarea>
+    </div>
+    <button class="send-btn" id="sendBtn" disabled title="Send (Enter)">⚡</button>
+  </div>
+
+  <!-- ── Scripts ────────────────────────────── -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <script>
+    marked.use({ breaks: true, gfm: true });
+
+    const messagesEl = document.getElementById('messages');
+    const inputEl    = document.getElementById('input');
+    const sendBtn    = document.getElementById('sendBtn');
+    const welcomeEl  = document.getElementById('welcome');
+
+    let history    = [];   // { role, content }[]
+    let streaming  = false;
+
+    // ── Helpers ──────────────────────────────
+
+    function scrollBottom() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function hideWelcome() {
+      if (welcomeEl) welcomeEl.style.display = 'none';
+    }
+
+    function updateSendBtn() {
+      sendBtn.disabled = inputEl.value.trim() === '' || streaming;
+    }
+
+    function autoResize() {
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+    }
+
+    // ── Avatar helper (img with ⚡ fallback) ──
+
+    function makeAvatar(role) {
+      const av = document.createElement('div');
+      av.className = 'row-avatar ' + (role === 'assistant' ? 'pika-av' : 'user-av');
+
+      if (role === 'assistant') {
+        const img = document.createElement('img');
+        img.src = '/assets/pikatardio.png';
+        img.alt = '⚡';
+        img.onerror = () => { av.innerHTML = '⚡'; };
+        av.appendChild(img);
+      } else {
+        av.textContent = 'T';
+      }
+      return av;
+    }
+
+    // ── Append a message row, return the bubble ──
+
+    function appendRow(role, text) {
+      hideWelcome();
+
+      const row    = document.createElement('div');
+      row.className = 'msg-row ' + role;
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble ' + (role === 'assistant' ? 'pika' : 'user');
+
+      if (text) {
+        if (role === 'assistant') {
+          bubble.innerHTML = DOMPurify.sanitize(marked.parse(text));
+        } else {
+          bubble.textContent = text;
+        }
+      }
+
+      row.appendChild(makeAvatar(role));
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+      scrollBottom();
+      return bubble;
+    }
+
+    // ── Typing indicator ──────────────────────
+
+    function showTyping() {
+      const row = document.createElement('div');
+      row.className = 'typing-row';
+      row.id = 'typing';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'typing-bubble';
+      bubble.innerHTML = '<div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>';
+
+      row.appendChild(makeAvatar('assistant'));
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+      scrollBottom();
+    }
+
+    function hideTyping() {
+      const el = document.getElementById('typing');
+      if (el) el.remove();
+    }
+
+    // ── Send a message ─────────────────────────
+
+    async function send(text) {
+      text = (text || inputEl.value).trim();
+      if (!text || streaming) return;
+
+      // Clear input
+      inputEl.value = '';
+      inputEl.style.height = 'auto';
+      updateSendBtn();
+      streaming = true;
+
+      appendRow('user', text);
+      history.push({ role: 'user', content: text });
+
+      showTyping();
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: history }),
+        });
+
+        if (!res.ok) throw new Error(`Server error ${res.status}`);
+
+        hideTyping();
+        const bubble = appendRow('assistant');
+
+        const reader  = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf  = '';
+        let full = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split('\n');
+          buf = lines.pop() ?? '';
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') continue;
+            try {
+              const { text: chunk } = JSON.parse(data);
+              if (chunk) {
+                full += chunk;
+                bubble.innerHTML = DOMPurify.sanitize(marked.parse(full));
+                scrollBottom();
+              }
+            } catch { /* ignore malformed chunks */ }
+          }
+        }
+
+        history.push({ role: 'assistant', content: full });
+
+      } catch (err) {
+        hideTyping();
+        const bubble = appendRow('assistant');
+        bubble.innerHTML = '<em style="color:#ff6b6b">⚡ Zap! Something went wrong. Make sure your ANTHROPIC_API_KEY is set and try again!</em>';
+        console.error(err);
+      } finally {
+        streaming = false;
+        updateSendBtn();
+        inputEl.focus();
+      }
+    }
+
+    // ── Events ────────────────────────────────
+
+    inputEl.addEventListener('input', () => { autoResize(); updateSendBtn(); });
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!sendBtn.disabled) send();
+      }
+    });
+
+    sendBtn.addEventListener('click', () => send());
+
+    // Suggestion chips
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => send(chip.dataset.msg));
+    });
+
+    // Focus input on desktop
+    if (window.innerWidth > 768) inputEl.focus();
+  </script>
+
+</body>
+</html>
