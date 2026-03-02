@@ -1,10 +1,20 @@
-- 👋 Hi, I’m @comradeinfidel
-- 👀 I’m interested in ...
-- 🌱 I’m currently learning ...
-- 💞️ I’m looking to collaborate on ...
-- 📫 How to reach me ...
+## 👁️ @comradeinfidel
 
-<!---
-comradeinfidel/comradeinfidel is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+> *The golden eyes are always watching.*
+
+---
+
+### Projects
+
+#### [ClawdBot](./clawdbot)
+A Discord bot with an anime aesthetic and a sharp personality.
+Calm. Perceptive. A little intimidating. Fiercely loyal.
+
+**Commands:** `!help` · `!ping` · `!clawd` · `!8ball` · `!roll` · moderation tools
+
+---
+
+- 👀 Interested in bots, automation, and dark aesthetics
+- 🌱 Currently learning Discord bot development
+- 💞️ Looking to collaborate on bot projects
+- 📫 Reach me on Discord
