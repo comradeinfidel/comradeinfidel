@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comrade Agent — Polymarket AI Trader</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>COMRADE AGENT</h1>
+  <span id="status-badge" class="status-badge stopped">○ STOPPED</span>
+
+  <div class="spacer"></div>
+
+  <div class="header-stat">
+    Today's PnL
+    <span id="stat-today-pnl">$0.00</span>
+  </div>
+  <div class="header-stat">
+    Total PnL
+    <span id="stat-total-pnl">$0.00</span>
+  </div>
+  <div class="header-stat">
+    Next Run
+    <span id="stat-next-run">—</span>
+  </div>
+
+  <button id="btn-toggle" class="primary">Start Agent</button>
+</header>
+
+<main>
+  <!-- ===== Left: Agent Reasoning Log ===== -->
+  <section class="log-panel">
+    <div class="panel-title">
+      <div class="dot" id="sse-dot"></div>
+      AGENT REASONING LOG
+    </div>
+    <div id="agent-log"></div>
+  </section>
+
+  <!-- ===== Right: Data panels ===== -->
+  <aside class="right-panel">
+
+    <!-- Balance -->
+    <div class="section">
+      <div class="panel-title">BALANCES</div>
+      <div class="balances">
+        <div class="balance-card">
+          <div class="label">POLYMARKET USDC</div>
+          <div class="value" id="balance-pm">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Open Positions -->
+    <div class="section positions">
+      <div class="panel-title">OPEN POSITIONS</div>
+      <div class="positions-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Outcome</th>
+              <th>Avg Price</th>
+              <th>Cur Price</th>
+              <th>Size</th>
+              <th>Unr. PnL</th>
+            </tr>
+          </thead>
+          <tbody id="positions-tbody">
+            <tr><td colspan="5" class="no-data">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PnL Chart -->
+    <div class="section chart">
+      <div class="panel-title">DAILY P&amp;L</div>
+      <div class="chart-wrap">
+        <canvas id="pnl-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Guardrails Config -->
+    <div class="section config-section">
+      <div class="panel-title">GUARDRAILS</div>
+      <div class="config-grid">
+        <div class="cfg-item">
+          <label>Max Position Size (USD)</label>
+          <input id="cfg-max-pos" type="number" min="1" step="1" />
+        </div>
+        <div class="cfg-item">
+          <label>Daily Loss Limit (USD)</label>
+          <input id="cfg-loss-limit" type="number" min="1" step="1" />
+        </div>
+        <div class="cfg-item">
+          <label>Max Open Positions</label>
+          <input id="cfg-max-open" type="number" min="1" step="1" />
+        </div>
+        <div class="cfg-item">
+          <label>Max Orders / Cycle</label>
+          <input id="cfg-max-orders" type="number" min="1" step="1" />
+        </div>
+        <div class="cfg-item">
+          <label>Interval (minutes)</label>
+          <input id="cfg-interval" type="number" min="1" step="1" />
+        </div>
+      </div>
+      <div class="config-actions">
+        <button id="btn-save-cfg">Save</button>
+        <span id="cfg-save-msg" style="color: var(--accent); font-size: 11px; align-self: center;"></span>
+      </div>
+    </div>
+
+  </aside>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
