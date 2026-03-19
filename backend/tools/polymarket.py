@@ -226,44 +226,74 @@ def get_market_price_history(
         return {"error": str(e)}
 
 
-def get_market_trades(condition_id: str, limit: int = 20) -> list[dict[str, Any]]:
+def get_market_trades(condition_id: str, limit: int = 20) -> dict[str, Any]:
     """
     Get recent confirmed trades for a market.
     Useful for gauging momentum: who is buying/selling and at what price.
+
+    Tries the authenticated CLOB client first (more reliable), then falls
+    back to a direct HTTP request to the CLOB trades endpoint.
     """
+    raw_trades: list[dict] = []
+
+    # Attempt 1: use authenticated py-clob-client
     try:
-        resp = _http.get(
-            f"{CLOB_HOST}/trades",
-            params={"market": condition_id, "limit": limit},
+        client = _get_client()
+        from py_clob_client.clob_types import TradeParams
+        resp = client.get_trades(TradeParams(market=condition_id, limit=limit))
+        if isinstance(resp, dict):
+            raw_trades = resp.get("data", [])
+        elif isinstance(resp, list):
+            raw_trades = resp
+    except Exception as e1:
+        logger.debug("CLOB client get_trades failed (%s), trying HTTP fallback", e1)
+        # Attempt 2: direct HTTP — Polymarket CLOB /trades endpoint
+        try:
+            resp = _http.get(
+                f"{CLOB_HOST}/trades",
+                params={"market": condition_id, "limit": limit},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            raw_trades = data if isinstance(data, list) else data.get("data", [])
+        except Exception as e2:
+            logger.error("get_market_trades HTTP fallback failed: %s", e2)
+            return {"error": str(e2), "trades": [], "flow_bias": "unknown"}
+
+    result = []
+    for t in raw_trades[:limit]:
+        # Field names vary: handle both CLOB and Gamma response shapes
+        size = (
+            t.get("size")
+            or t.get("takerAmount")
+            or t.get("makerAmount")
+            or 0
         )
-        resp.raise_for_status()
-        data = resp.json()
-        trades = data if isinstance(data, list) else data.get("data", [])
-        result = []
-        for t in trades[:limit]:
-            result.append({
-                "trade_id": t.get("id"),
-                "side": t.get("side"),
-                "price": t.get("price"),
-                "size": t.get("size"),
-                "outcome": t.get("outcome"),
-                "timestamp": t.get("timestamp") or t.get("created_at"),
-            })
-        # Compute buy/sell pressure
-        buys = [t for t in result if (t.get("side") or "").upper() == "BUY"]
-        sells = [t for t in result if (t.get("side") or "").upper() == "SELL"]
-        buy_vol = sum(float(t.get("size") or 0) for t in buys)
-        sell_vol = sum(float(t.get("size") or 0) for t in sells)
-        pressure = "buy_pressure" if buy_vol > sell_vol else "sell_pressure" if sell_vol > buy_vol else "neutral"
-        return {
-            "trades": result,
-            "buy_volume": round(buy_vol, 2),
-            "sell_volume": round(sell_vol, 2),
-            "flow_bias": pressure,
-        }
-    except Exception as e:
-        logger.error("get_market_trades failed: %s", e)
-        return {"error": str(e)}
+        side = t.get("side") or t.get("takerSide") or ""
+        result.append({
+            "trade_id": t.get("id") or t.get("tradeId"),
+            "side": side.upper() if side else "UNKNOWN",
+            "price": t.get("price"),
+            "size": size,
+            "outcome": t.get("outcome"),
+            "timestamp": t.get("timestamp") or t.get("createdAt") or t.get("created_at"),
+        })
+
+    buys = [t for t in result if t["side"] == "BUY"]
+    sells = [t for t in result if t["side"] == "SELL"]
+    buy_vol = sum(float(t["size"] or 0) for t in buys)
+    sell_vol = sum(float(t["size"] or 0) for t in sells)
+    pressure = (
+        "buy_pressure" if buy_vol > sell_vol
+        else "sell_pressure" if sell_vol > buy_vol
+        else "neutral"
+    )
+    return {
+        "trades": result,
+        "buy_volume": round(buy_vol, 2),
+        "sell_volume": round(sell_vol, 2),
+        "flow_bias": pressure,
+    }
 
 
 # ------------------------------------------------------------------ #

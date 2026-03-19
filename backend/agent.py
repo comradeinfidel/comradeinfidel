@@ -579,6 +579,13 @@ async def run_agent_cycle() -> None:
 
     agent_state.last_run = datetime.utcnow()
 
+    # Sync realized PnL from Polymarket positions so the chart reflects reality
+    try:
+        positions = await asyncio.to_thread(pm.get_positions)
+        agent_state.sync_pnl_from_positions(positions)
+    except Exception as e:
+        logger.warning("PnL sync failed: %s", e)
+
 
 def _summarise_inputs(inputs: dict) -> str:
     """Compact display of tool inputs for the log."""
